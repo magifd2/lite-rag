@@ -45,9 +45,6 @@ lite-rag/
 │       ├── pre-commit       # Runs `make check` before each commit
 │       └── pre-push         # Runs `make check` before each push
 │
-├── .github/
-│   └── workflows/
-│       └── build.yml        # CI: build all platforms on tag push; run tests
 │
 ├── docs/
 │   ├── design/

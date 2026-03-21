@@ -121,10 +121,6 @@ sudo apt-get install gcc-aarch64-linux-gnu
 make cross-build-linux-native
 ```
 
-### CI / GitHub Actions
-
-The workflow at `.github/workflows/build.yml` builds all four platforms
-automatically on tag push using native GitHub-hosted runners.
 
 ## Project-Local Module Cache
 

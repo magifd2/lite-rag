@@ -45,9 +45,6 @@ lite-rag/
 │       ├── pre-commit       # コミット前に `make check` を実行
 │       └── pre-push         # プッシュ前に `make check` を実行
 │
-├── .github/
-│   └── workflows/
-│       └── build.yml        # CI：タグ push 時に全プラットフォームビルド・テスト実行
 │
 ├── docs/
 │   ├── design/

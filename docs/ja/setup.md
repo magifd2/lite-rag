@@ -109,10 +109,6 @@ sudo apt-get install gcc-aarch64-linux-gnu
 make cross-build-linux-native
 ```
 
-### CI / GitHub Actions
-
-`.github/workflows/build.yml` のワークフローがタグ push 時に
-GitHub ホスト型ランナーで全 4 プラットフォームを自動ビルドします。
 
 ## プロジェクトローカルモジュールキャッシュ
 
