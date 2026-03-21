@@ -9,23 +9,29 @@ lite-rag [--config <path>] <command>
 ### index — ドキュメントをインデックス
 
 ```sh
-lite-rag index <directory>
+lite-rag index --dir <directory>
+lite-rag index --file <file>
 ```
 
-指定ディレクトリ以下の `*.md` ファイルを再帰的に走査してインデックスします。
+`--dir` または `--file` のどちらか一方を必ず指定します（同時指定不可）。
 
+- **`--dir`**: 指定ディレクトリ以下の `*.md` ファイルを再帰的に走査してインデックスします。ファイル単位でエラーが発生しても処理は継続されます。
+- **`--file`**: 指定した 1 ファイルをインデックスします。拡張子は問いません。エラーは即時返されます。
 - ファイルの SHA-256 ハッシュと埋め込みモデル名をチェックし、変更がなければスキップします。
-- ファイル単位でエラーが発生しても処理は継続されます（ログに警告を出力）。
 - インデックス結果は `config.toml` の `database.path` に指定した DuckDB ファイルに保存されます。
 
 **使用例:**
 
 ```sh
-# カレントディレクトリの docs/ フォルダをインデックス
-lite-rag index ./docs
+# ディレクトリをインデックス
+lite-rag index --dir ./docs
+
+# シングルファイルをインデックス
+lite-rag index --file ./docs/overview.md
+lite-rag index --file ./release-notes.txt
 
 # 別の設定ファイルを使う
-lite-rag --config /path/to/config.toml index ./docs
+lite-rag --config /path/to/config.toml index --dir ./docs
 ```
 
 ### ask — 質問に回答

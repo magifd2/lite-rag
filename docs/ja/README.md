@@ -49,8 +49,11 @@ make setup
 # ビルド
 make build
 
-# Markdown ファイルをインデックス
-./bin/lite-rag index /path/to/docs
+# ディレクトリをインデックス
+./bin/lite-rag index --dir /path/to/docs
+
+# シングルファイルをインデックス
+./bin/lite-rag index --file /path/to/doc.md
 
 # 質問する（CLI）
 ./bin/lite-rag ask "リトライポリシーの設定方法は？"
@@ -107,7 +110,8 @@ log_level = "info"             # info | debug | warn | error
 lite-rag [--config <path>] <command>
 
 コマンド:
-  index   <directory>   指定ディレクトリ以下の Markdown ファイルをインデックス
+  index   --dir <directory>  ディレクトリ以下の *.md ファイルをインデックス
+          --file <file>       シングルファイルをインデックス（拡張子不問）
   ask     <question>    インデックス済みドキュメントを使って質問に回答
   serve                 HTTP API サーバーと組み込み Web UI を起動
   docs                  インデックス済みドキュメントを管理
@@ -117,12 +121,18 @@ lite-rag [--config <path>] <command>
 ### index
 
 ```sh
-./bin/lite-rag index ./docs
+# ディレクトリ以下の *.md ファイルをすべてインデックス（再帰的）
+./bin/lite-rag index --dir ./docs
+
+# シングルファイルをインデックス（拡張子不問）
+./bin/lite-rag index --file ./docs/notes.md
+./bin/lite-rag index --file ./release-notes.txt
 ```
 
-- `./docs` を再帰的にスキャンし、`*.md` ファイルのみ処理します
+- `--dir`: 指定ディレクトリを再帰的にスキャンし `*.md` ファイルのみ処理します
+- `--file`: 拡張子に関わらず指定ファイルを直接インデックスします
 - SHA-256 ハッシュが一致するファイルはスキップします（再埋め込みなし）
-- ファイル単位のエラーはログに記録され、全体の処理は継続します
+- `--dir` のファイル単位エラーはログに記録され全体の処理は継続しますが、`--file` のエラーは即時返されます
 
 ### ask
 

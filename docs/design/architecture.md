@@ -289,7 +289,8 @@ and merges overlapping spans before returning passages to the caller (§3.3.1).
 lite-rag [--config <path>] <command>
 
 Commands:
-  index   <directory>   Index all Markdown files under <directory>
+  index   --dir <directory>   Index all *.md files under a directory
+          --file <file>        Index a single file (any extension)
   ask     <question>    Answer a question using the indexed documents
   serve                 Start the HTTP API server with embedded Web UI
   docs                  Manage indexed documents (list / show / delete)

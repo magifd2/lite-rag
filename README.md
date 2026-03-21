@@ -58,7 +58,10 @@ make setup
 make build
 
 # Index a directory of Markdown files
-./bin/lite-rag index /path/to/docs
+./bin/lite-rag index --dir /path/to/docs
+
+# Index a single file
+./bin/lite-rag index --file /path/to/doc.md
 
 # Ask a question (CLI)
 ./bin/lite-rag ask "How do I configure the retry policy?"
@@ -115,8 +118,9 @@ Environment variables override file settings:
 lite-rag [--config <path>] <command>
 
 Commands:
-  index   <directory>   Index all Markdown files under <directory>
-  ask     <question>    Answer a question using the indexed documents
+  index   --dir <directory>   Index all *.md files under a directory
+          --file <file>        Index a single file (any extension)
+  ask     <question>           Answer a question using the indexed documents
   serve                 Start the HTTP API server with embedded Web UI
   docs                  Manage indexed documents
   version               Print version information
@@ -125,12 +129,18 @@ Commands:
 ### index
 
 ```sh
-./bin/lite-rag index ./docs
+# Index all *.md files under a directory (recursive)
+./bin/lite-rag index --dir ./docs
+
+# Index a single file (any extension)
+./bin/lite-rag index --file ./docs/notes.md
+./bin/lite-rag index --file ./release-notes.txt
 ```
 
-- Walks `./docs` recursively; processes only `*.md` files.
+- `--dir`: walks the directory recursively; processes only `*.md` files.
+- `--file`: indexes the specified file directly, regardless of extension.
 - Skips files whose SHA-256 hash matches the stored value (no re-embedding).
-- Per-file errors are logged and do not abort the overall run.
+- `--dir` per-file errors are logged and do not abort the overall run; `--file` errors are returned immediately.
 
 ### ask
 

@@ -232,3 +232,85 @@ func TestIndexDir_NonexistentDir(t *testing.T) {
 		t.Error("expected error for nonexistent directory, got nil")
 	}
 }
+
+// ── IndexFile tests ────────────────────────────────────────────────────────
+
+func TestIndexFile_IndexesSingleFile(t *testing.T) {
+	dir := t.TempDir()
+	path := writeFile(t, dir, "single.md", "# Single\n\nThis is a single file.")
+
+	db := openDB(t)
+	emb := &mockEmbedder{dim: 4}
+	idx := indexer.New(db, emb, "test-model", testCfg())
+
+	if err := idx.IndexFile(context.Background(), path); err != nil {
+		t.Fatalf("IndexFile: %v", err)
+	}
+
+	id, hash, _, err := db.FindDocumentByPath(path)
+	if err != nil {
+		t.Fatalf("FindDocumentByPath: %v", err)
+	}
+	if id == "" || hash == "" {
+		t.Error("file not found in DB after IndexFile")
+	}
+	if emb.calls == 0 {
+		t.Error("Embed was never called")
+	}
+}
+
+func TestIndexFile_NonMarkdownExtension(t *testing.T) {
+	dir := t.TempDir()
+	path := writeFile(t, dir, "notes.txt", "# Notes\n\nPlain text file indexed directly.")
+
+	db := openDB(t)
+	emb := &mockEmbedder{dim: 4}
+	idx := indexer.New(db, emb, "test-model", testCfg())
+
+	// IndexFile must accept any extension.
+	if err := idx.IndexFile(context.Background(), path); err != nil {
+		t.Fatalf("IndexFile on .txt: %v", err)
+	}
+
+	id, _, _, _ := db.FindDocumentByPath(path)
+	if id == "" {
+		t.Error("non-.md file not found in DB")
+	}
+}
+
+func TestIndexFile_SkipsUnchangedFile(t *testing.T) {
+	dir := t.TempDir()
+	path := writeFile(t, dir, "doc.md", "# Stable\n\nContent.")
+
+	db := openDB(t)
+	emb := &mockEmbedder{dim: 4}
+	idx := indexer.New(db, emb, "test-model", testCfg())
+
+	if err := idx.IndexFile(context.Background(), path); err != nil {
+		t.Fatal(err)
+	}
+	callsAfterFirst := emb.calls
+
+	if err := idx.IndexFile(context.Background(), path); err != nil {
+		t.Fatal(err)
+	}
+	if emb.calls != callsAfterFirst {
+		t.Errorf("Embed called %d extra time(s) on unchanged file", emb.calls-callsAfterFirst)
+	}
+}
+
+func TestIndexFile_ReturnsErrorDirectly(t *testing.T) {
+	dir := t.TempDir()
+	path := writeFile(t, dir, "doc.md", "# Test\n\nContent.")
+
+	db := openDB(t)
+	db.Close() // force DB error
+
+	emb := &mockEmbedder{dim: 4}
+	idx := indexer.New(db, emb, "test-model", testCfg())
+
+	// Unlike IndexDir, IndexFile must return the error directly.
+	if err := idx.IndexFile(context.Background(), path); err == nil {
+		t.Error("expected error when DB is closed, got nil")
+	}
+}

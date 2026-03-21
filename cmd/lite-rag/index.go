@@ -13,18 +13,38 @@ import (
 	"lite-rag/internal/llm"
 )
 
+var (
+	indexDir  string
+	indexFile string
+)
+
 var indexCmd = &cobra.Command{
-	Use:   "index <directory>",
-	Short: "Index Markdown documents in a directory",
-	Args:  cobra.ExactArgs(1),
-	RunE:  runIndex,
+	Use:   "index (--dir <directory> | --file <file>)",
+	Short: "Index Markdown documents",
+	Long: `Index Markdown documents into the database.
+
+  --dir  <directory>  Recursively index all *.md files under a directory.
+  --file <file>       Index a single file (any extension).
+
+Exactly one of --dir or --file must be specified.`,
+	Args: cobra.NoArgs,
+	RunE: runIndex,
 }
 
 func init() {
+	indexCmd.Flags().StringVar(&indexDir, "dir", "", "directory to index recursively")
+	indexCmd.Flags().StringVar(&indexFile, "file", "", "single file to index")
 	rootCmd.AddCommand(indexCmd)
 }
 
-func runIndex(cmd *cobra.Command, args []string) error {
+func runIndex(cmd *cobra.Command, _ []string) error {
+	if indexDir == "" && indexFile == "" {
+		return fmt.Errorf("one of --dir or --file is required")
+	}
+	if indexDir != "" && indexFile != "" {
+		return fmt.Errorf("--dir and --file are mutually exclusive")
+	}
+
 	cfg, err := config.Load(cfgFile)
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
@@ -39,15 +59,24 @@ func runIndex(cmd *cobra.Command, args []string) error {
 	client := llm.New(cfg.API.BaseURL, cfg.API.APIKey, cfg.Models.Embedding, cfg.Models.Chat)
 	idx := indexer.New(db, client, cfg.Models.Embedding, cfg.Retrieval)
 
-	dir := args[0]
-	if _, err := os.Stat(dir); err != nil {
-		return fmt.Errorf("directory %s: %w", dir, err)
+	if indexFile != "" {
+		if _, err := os.Stat(indexFile); err != nil {
+			return fmt.Errorf("file %s: %w", indexFile, err)
+		}
+		fmt.Fprintf(os.Stderr, "Indexing %s...\n", indexFile)
+		if err := idx.IndexFile(context.Background(), indexFile); err != nil {
+			return err
+		}
+	} else {
+		if _, err := os.Stat(indexDir); err != nil {
+			return fmt.Errorf("directory %s: %w", indexDir, err)
+		}
+		fmt.Fprintf(os.Stderr, "Indexing %s...\n", indexDir)
+		if err := idx.IndexDir(context.Background(), indexDir); err != nil {
+			return err
+		}
 	}
 
-	fmt.Fprintf(os.Stderr, "Indexing %s...\n", dir)
-	if err := idx.IndexDir(context.Background(), dir); err != nil {
-		return err
-	}
 	fmt.Fprintln(os.Stderr, "Done.")
 	return nil
 }

@@ -74,6 +74,10 @@ func mockLLM(t *testing.T) *httptest.Server {
 // run executes rootCmd with the given arguments and returns the error.
 // It suppresses cobra's built-in usage/error printing to keep test output clean.
 func run(args ...string) error {
+	// Reset package-level flag vars; cobra does not reset them between Execute calls.
+	indexDir = ""
+	indexFile = ""
+
 	rootCmd.SilenceUsage = true
 	rootCmd.SilenceErrors = true
 	rootCmd.SetArgs(args)
@@ -97,8 +101,46 @@ func TestIndexCmd_HappyPath(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := run("--config", cfg, "index", docDir); err != nil {
+	if err := run("--config", cfg, "index", "--dir", docDir); err != nil {
 		t.Errorf("index command failed: %v", err)
+	}
+}
+
+func TestIndexCmd_SingleFile(t *testing.T) {
+	srv := mockLLM(t)
+	dir := t.TempDir()
+	dbPath := filepath.Join(dir, "test.db")
+	cfg := writeCfg(t, dir, srv.URL, dbPath)
+
+	filePath := filepath.Join(dir, "single.md")
+	if err := os.WriteFile(filePath, []byte("# Single\n\nFile content."), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := run("--config", cfg, "index", "--file", filePath); err != nil {
+		t.Errorf("index --file command failed: %v", err)
+	}
+}
+
+func TestIndexCmd_MutuallyExclusive(t *testing.T) {
+	srv := mockLLM(t)
+	dir := t.TempDir()
+	dbPath := filepath.Join(dir, "test.db")
+	cfg := writeCfg(t, dir, srv.URL, dbPath)
+
+	if err := run("--config", cfg, "index", "--dir", dir, "--file", dbPath); err == nil {
+		t.Error("expected error when both --dir and --file are specified, got nil")
+	}
+}
+
+func TestIndexCmd_NoFlags(t *testing.T) {
+	srv := mockLLM(t)
+	dir := t.TempDir()
+	dbPath := filepath.Join(dir, "test.db")
+	cfg := writeCfg(t, dir, srv.URL, dbPath)
+
+	if err := run("--config", cfg, "index"); err == nil {
+		t.Error("expected error when neither --dir nor --file is specified, got nil")
 	}
 }
 
@@ -108,7 +150,7 @@ func TestIndexCmd_NonexistentDir(t *testing.T) {
 	dbPath := filepath.Join(dir, "test.db")
 	cfg := writeCfg(t, dir, srv.URL, dbPath)
 
-	if err := run("--config", cfg, "index", "/nonexistent/path/xyz"); err == nil {
+	if err := run("--config", cfg, "index", "--dir", "/nonexistent/path/xyz"); err == nil {
 		t.Error("expected error for nonexistent directory, got nil")
 	}
 }
@@ -120,7 +162,7 @@ func TestIndexCmd_InvalidConfig(t *testing.T) {
 	if err := os.WriteFile(cfgPath, []byte("not valid toml [[[["), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := run("--config", cfgPath, "index", dir); err == nil {
+	if err := run("--config", cfgPath, "index", "--dir", dir); err == nil {
 		t.Error("expected error for invalid TOML config, got nil")
 	}
 }
@@ -132,7 +174,7 @@ func TestIndexCmd_DBError(t *testing.T) {
 	cfg := writeCfg(t, dir, srv.URL, dir)
 
 	docDir := t.TempDir()
-	if err := run("--config", cfg, "index", docDir); err == nil {
+	if err := run("--config", cfg, "index", "--dir", docDir); err == nil {
 		t.Error("expected error when DB path is a directory, got nil")
 	}
 }
@@ -166,7 +208,7 @@ func TestAskCmd_AfterIndex(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(docDir, "doc.md"), []byte("# Topic\n\nSome content."), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := run("--config", cfg, "index", docDir); err != nil {
+	if err := run("--config", cfg, "index", "--dir", docDir); err != nil {
 		t.Fatalf("index failed: %v", err)
 	}
 

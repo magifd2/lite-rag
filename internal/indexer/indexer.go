@@ -45,6 +45,12 @@ func New(db *database.DB, emb Embedder, embeddingModel string, cfg config.Retrie
 	}
 }
 
+// IndexFile indexes a single file at path, regardless of extension.
+// Unlike IndexDir, errors are returned directly to the caller.
+func (idx *Indexer) IndexFile(ctx context.Context, path string) error {
+	return idx.indexFile(ctx, path)
+}
+
 // IndexDir walks dir recursively and indexes all *.md files.
 // Per-file errors are logged and do not abort the overall run.
 func (idx *Indexer) IndexDir(ctx context.Context, dir string) error {
