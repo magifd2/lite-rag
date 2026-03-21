@@ -7,6 +7,34 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.2.0] — 2026-03-21
+
+### Breaking Changes
+
+- **`index` command**: positional `<directory>` argument replaced with explicit flags.
+  - `lite-rag index --dir <directory>` — recursively index all `*.md` files (previous behaviour)
+  - `lite-rag index --file <file>` — index a single file, any extension
+  - Exactly one of `--dir` or `--file` is required; specifying both is an error.
+
+### Added
+
+- **`index --file <file>`** — single-file ingestion for external integrations.
+  Accepts any file extension. Errors are returned immediately (unlike `--dir` which
+  logs per-file errors and continues).
+
+- **`ask --json`** — outputs the answer and deduplicated sources as a single JSON object.
+  Progress messages are suppressed; stdout contains only valid JSON. Useful for
+  scripting and external integrations.
+
+  ```json
+  {
+    "answer": "...",
+    "sources": [{"file_path": "...", "heading_path": "...", "score": 0.872}]
+  }
+  ```
+
+---
+
 ## [0.1.2] — 2026-03-21
 
 ### Fixed
@@ -95,6 +123,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Windows is not supported due to CGo constraints from `go-duckdb`.
 
+[0.2.0]: https://github.com/magifd2/lite-rag/releases/tag/v0.2.0
 [0.1.2]: https://github.com/magifd2/lite-rag/releases/tag/v0.1.2
 [0.1.1]: https://github.com/magifd2/lite-rag/releases/tag/v0.1.1
 [0.1.0]: https://github.com/magifd2/lite-rag/releases/tag/v0.1.0
