@@ -7,6 +7,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.1.1] — 2026-03-21
+
+### Added
+
+- **`docs` subcommand** — manage documents stored in the index database.
+  - `docs list [--json]` — list all indexed documents as a text table or JSON array.
+    Each entry includes document ID (SHA-256), file path, chunk count, embedding model,
+    and indexed timestamp.
+  - `docs show <id>` — reconstruct and print the stored text of a document from its
+    chunks; heading hierarchy is shown as `<!-- heading -->` comment separators.
+  - `docs delete <id>` — remove a document and all its chunks from the database.
+
+---
+
 ## [0.1.0] — 2026-03-21
 
 ### Added
@@ -53,7 +67,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Cross-compilation** via `make cross-build`:
   - darwin/arm64, darwin/amd64 — macOS system `clang -arch`
   - linux/amd64, linux/arm64 — Podman/Docker container with GCC cross-compilers
-  - GitHub Actions workflow for automated builds on tag push
 
 - **Authoring guide** (`docs/authoring-guide.md`) — how to write Markdown documents
   for best RAG retrieval results, with Japanese translation.
@@ -72,4 +85,5 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Windows is not supported due to CGo constraints from `go-duckdb`.
 
-[0.1.0]: https://github.com/example/lite-rag/releases/tag/v0.1.0
+[0.1.1]: https://github.com/magifd2/lite-rag/releases/tag/v0.1.1
+[0.1.0]: https://github.com/magifd2/lite-rag/releases/tag/v0.1.0
