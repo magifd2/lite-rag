@@ -102,14 +102,14 @@ All contributors (including Claude Code) must follow these rules.
 ## 17. Git and GitHub
 
 - All code is managed with Git; the authoritative remote is GitHub.
-- Branch strategy:
-  - `main` — protected; direct pushes are prohibited.
+- This is a single-contributor project; direct commits to `main` are the normal workflow.
+- Branch strategy (use when the change is large, risky, or needs isolated review):
   - `feature/<name>` — new features.
   - `fix/<name>` — bug fixes.
   - `docs/<name>` — documentation-only changes.
   - `chore/<name>` — tooling, dependency updates.
-- Pull Requests are required to merge into `main`.
-- PRs must include a description of what changed and why.
+- Commit messages must be descriptive (what changed and why), regardless of whether a
+  branch or direct commit is used.
 
 ## 18. Dependency Management
 
@@ -128,14 +128,12 @@ All contributors (including Claude Code) must follow these rules.
 
 ## 20. Quality Gates via Local Automation (Git Hooks + Makefile)
 
-- To avoid cloud CI costs, quality gates are enforced locally rather than via a hosted CI service.
-- A `make check` target (or equivalent) must:
-  1. Lint the code.
-  2. Run the full test suite.
-  3. Build for all target platforms.
-  4. Run security scans (see Rule 21).
-- A Git **pre-commit hook** (managed via the repo, e.g., under `scripts/hooks/`) runs `make check` before every commit; commits are rejected if any step fails.
-- A Git **pre-push hook** performs the same checks before pushing to the remote.
+- Quality gates are enforced locally. No hosted CI service (e.g., GitHub Actions) is used —
+  cloud CI is avoided due to both cost and CGo cross-compilation complexity.
+- A `make check` target runs the full quality gate: lint → vet → test → build.
+- Hook split to keep the feedback loop fast:
+  - **pre-commit**: runs `make vet lint` only (fast; catches obvious issues before every commit).
+  - **pre-push**: runs `make check` (full gate: vet + lint + test + build) before pushing to remote.
 - Hook installation is documented in `docs/setup.md` and can be automated with `make setup`.
 
 ## 21. Security Scanning
