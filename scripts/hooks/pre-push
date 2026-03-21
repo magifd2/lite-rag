@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# Pre-push hook: runs the quality gate before allowing a push.
+# Install via: make setup
+
+set -e
+
+echo "==> [pre-push] Running quality gate..."
+
+export GOPATH="$(pwd)/.go"
+export GOMODCACHE="$(pwd)/.go/pkg/mod"
+export GOCACHE="$(pwd)/.go/cache"
+
+make check
+
+echo "==> [pre-push] All checks passed."

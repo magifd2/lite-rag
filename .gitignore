@@ -1,0 +1,26 @@
+# Compiled binaries
+bin/
+
+# Release archives
+dist/
+
+# DuckDB database files
+*.db
+*.db.wal
+
+# Project-local Go module cache (sandbox workaround)
+.go/
+
+# Coverage reports
+coverage.out
+*.out
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+config.toml

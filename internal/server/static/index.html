@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lite-rag</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>lite-rag</h1>
+    <span class="version" id="version"></span>
+  </header>
+
+  <main>
+    <div class="query-form">
+      <textarea
+        id="query"
+        placeholder="質問を入力してください… (Enter で送信、Shift+Enter で改行)"
+        autofocus
+      ></textarea>
+      <button id="submit">Ask</button>
+    </div>
+
+    <div class="status-bar" id="status"></div>
+
+    <div class="answer-panel" id="answer-panel">
+      <div class="answer-header">
+        <div class="answer-label">Answer</div>
+        <div class="view-toggle">
+          <button class="toggle-btn active" id="btn-rendered" data-view="rendered">Rendered</button>
+          <button class="toggle-btn" id="btn-raw" data-view="raw">Raw</button>
+        </div>
+      </div>
+      <div class="markdown-body" id="answer-body"></div>
+      <pre class="raw-body" id="answer-raw" hidden></pre>
+      <div id="sources"></div>
+    </div>
+  </main>
+
+  <footer>lite-rag — local RAG system</footer>
+</div>
+
+<script src="/marked.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

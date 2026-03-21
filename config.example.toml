@@ -1,0 +1,60 @@
+# lite-rag example configuration
+# Copy this file to config.toml and adjust the values for your environment.
+# All settings can also be overridden via environment variables (prefix: LITE_RAG_).
+
+[api]
+# Base URL of the OpenAI-compatible LLM API endpoint.
+# Environment variable: LITE_RAG_API_BASE_URL
+base_url = "http://localhost:1234/v1"
+
+# API key sent in the Authorization header.
+# For LM Studio this can be any non-empty string.
+# Environment variable: LITE_RAG_API_KEY
+api_key  = "lm-studio"
+
+[models]
+# Embedding model identifier as configured in LM Studio.
+# Environment variable: LITE_RAG_EMBEDDING_MODEL
+embedding = "nomic-ai/nomic-embed-text-v1.5-GGUF"
+
+# Chat model identifier as configured in LM Studio.
+# Environment variable: LITE_RAG_CHAT_MODEL
+chat      = "openai/gpt-oss-20b"
+
+[database]
+# Path to the DuckDB database file.
+# Environment variable: LITE_RAG_DB_PATH
+path = "./lite-rag.db"
+
+[retrieval]
+# Number of vector search hits to retrieve per query.
+top_k = 5
+
+# Number of adjacent chunks (before and after each hit) to include for context.
+# Set to 0 to return bare hit chunks without expansion.
+context_window = 1
+
+# Target token count per chunk. Mixed JP/EN token estimation is applied.
+chunk_size = 512
+
+# Token overlap between adjacent chunks to smooth chunk boundaries.
+chunk_overlap = 64
+
+# When true, the chat model rewrites the query into a declarative statement
+# optimised for document retrieval, then runs a second vector search in parallel.
+# Results from both searches are merged (max score per chunk) before context
+# expansion. Increases recall at the cost of one extra LLM call per query.
+query_rewrite = false
+
+[server]
+# Listen address for the `serve` subcommand (host:port).
+# Bind to 127.0.0.1 to restrict access to localhost only (recommended).
+# Can be overridden at runtime with: lite-rag serve --addr <host:port>
+addr = "127.0.0.1:8080"
+
+# Structured JSON log level written to stderr.
+# "info"  — logs metadata only (passages count, score, latency). Query text is NOT logged.
+# "debug" — also logs query text. Use only in development; queries may contain sensitive data.
+# "warn"  — logs warnings and errors only.
+# "error" — logs errors only.
+log_level = "info"

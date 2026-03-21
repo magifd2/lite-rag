@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# Pre-commit hook: runs the quality gate before allowing a commit.
+# Install via: make setup
+
+set -e
+
+echo "==> [pre-commit] Running quality gate..."
+
+export GOPATH="$(pwd)/.go"
+export GOMODCACHE="$(pwd)/.go/pkg/mod"
+export GOCACHE="$(pwd)/.go/cache"
+
+make check
+
+echo "==> [pre-commit] All checks passed."
