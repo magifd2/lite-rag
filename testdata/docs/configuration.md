@@ -1,6 +1,8 @@
 # 設定リファレンス
 
-設定は `config.toml` ファイルで管理します。`--config` フラグでパスを指定できます（デフォルト: `./config.toml`）。
+設定は `config.toml` ファイルで管理します。`--config` フラグでパスを指定できます。
+
+デフォルトのパスは `$XDG_CONFIG_HOME/lite-rag/config.toml`（未設定時は `~/.config/lite-rag/config.toml`）です。
 
 ## 設定項目
 
@@ -61,13 +63,29 @@ chunk_overlap  = 64
 | context_window | 各ヒットの前後に拡張するチャンク数（0 = 拡張なし）  | 1        |
 | chunk_size     | チャンクあたりの目標トークン数                      | 512      |
 | chunk_overlap  | 隣接チャンク間のオーバーラップトークン数             | 64       |
+| query_rewrite  | LLM によるクエリリライトを有効にする（再現率向上、約 +2 秒） | false |
+
+### [server] セクション
+
+```toml
+[server]
+addr      = "127.0.0.1:8080"
+log_level = "info"
+```
+
+| キー       | 説明                                              | デフォルト         |
+|-----------|--------------------------------------------------|--------------------|
+| addr      | `serve` コマンドのリッスンアドレス                | `127.0.0.1:8080`   |
+| log_level | ログレベル（`info` / `debug` / `warn` / `error`） | `info`             |
 
 ## 環境変数オーバーライド
 
 `config.toml` の設定は環境変数で上書きできます。
 
-| 環境変数              | 対応する設定項目   |
-|---------------------|-----------------|
-| `LITE_RAG_API_BASE_URL` | `api.base_url` |
-| `LITE_RAG_API_KEY`      | `api.api_key`  |
-| `LITE_RAG_DB_PATH`      | `database.path`|
+| 環境変数                    | 対応する設定項目       |
+|---------------------------|----------------------|
+| `LITE_RAG_API_BASE_URL`   | `api.base_url`       |
+| `LITE_RAG_API_KEY`        | `api.api_key`        |
+| `LITE_RAG_EMBEDDING_MODEL`| `models.embedding`   |
+| `LITE_RAG_CHAT_MODEL`     | `models.chat`        |
+| `LITE_RAG_DB_PATH`        | `database.path`      |
