@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -14,6 +17,8 @@ import (
 	"lite-rag/internal/retriever"
 )
 
+var askJSON bool
+
 var askCmd = &cobra.Command{
 	Use:   "ask <question>",
 	Short: "Answer a question using indexed documents",
@@ -22,6 +27,7 @@ var askCmd = &cobra.Command{
 }
 
 func init() {
+	askCmd.Flags().BoolVar(&askJSON, "json", false, "output answer and sources as JSON")
 	rootCmd.AddCommand(askCmd)
 }
 
@@ -47,21 +53,30 @@ func runAsk(cmd *cobra.Command, args []string) error {
 	}
 	ret := retriever.New(db, client, rewriter, cfg.Models.Embedding, cfg.Retrieval)
 
-	fmt.Fprintf(os.Stderr, "Searching for: %s\n", query)
+	// Suppress progress messages in JSON mode to keep stdout clean.
+	progress := io.Writer(os.Stderr)
+	if askJSON {
+		progress = io.Discard
+	}
+
+	fmt.Fprintf(progress, "Searching for: %s\n", query)
 	passages, err := ret.Retrieve(context.Background(), query)
 	if err != nil {
 		return fmt.Errorf("retrieve: %w", err)
 	}
 	if len(passages) == 0 {
-		fmt.Fprintln(os.Stderr, "No relevant documents found.")
+		fmt.Fprintln(progress, "No relevant documents found.")
+		if askJSON {
+			return outputAnswerJSON("", nil)
+		}
 		return nil
 	}
 
 	topScore := passages[0].Score
 	if topScore < 0.60 {
-		fmt.Fprintf(os.Stderr, "⚠ Low relevance (top score: %.3f) — answer may not reflect the documents.\n", topScore)
+		fmt.Fprintf(progress, "⚠ Low relevance (top score: %.3f) — answer may not reflect the documents.\n", topScore)
 	}
-	fmt.Fprintf(os.Stderr, "Found %d passage(s). Generating answer...\n\n", len(passages))
+	fmt.Fprintf(progress, "Found %d passage(s). Generating answer...\n\n", len(passages))
 
 	// Generate a per-request nonce that does not appear in the query or any
 	// passage text. If the nonce were present in user-controlled content, a
@@ -111,11 +126,22 @@ func runAsk(cmd *cobra.Command, args []string) error {
 		},
 	}
 
-	if err := client.Chat(context.Background(), messages, os.Stdout); err != nil {
+	// In JSON mode, buffer the answer; in text mode stream directly to stdout.
+	answerWriter := io.Writer(os.Stdout)
+	var answerBuf bytes.Buffer
+	if askJSON {
+		answerWriter = &answerBuf
+	}
+
+	if err := client.Chat(context.Background(), messages, answerWriter); err != nil {
 		return err
 	}
 
-	// Print cited sources after the streamed answer.
+	if askJSON {
+		return outputAnswerJSON(answerBuf.String(), passages)
+	}
+
+	// Text mode: print cited sources after the streamed answer.
 	fmt.Fprint(os.Stdout, "\n\n---\n")
 	type sourceEntry struct {
 		filePath    string
@@ -148,4 +174,46 @@ func runAsk(cmd *cobra.Command, args []string) error {
 		}
 	}
 	return nil
+}
+
+// outputAnswerJSON writes the answer and deduplicated sources as a JSON object.
+func outputAnswerJSON(answer string, passages []retriever.Passage) error {
+	type sourceJSON struct {
+		FilePath    string  `json:"file_path"`
+		HeadingPath string  `json:"heading_path,omitempty"`
+		Score       float32 `json:"score"`
+	}
+	type outputJSON struct {
+		Answer  string       `json:"answer"`
+		Sources []sourceJSON `json:"sources"`
+	}
+
+	// Deduplicate sources by file path, keeping highest score per file.
+	type entry struct {
+		headingPath string
+		score       float32
+	}
+	seen := make(map[string]entry, len(passages))
+	order := make([]string, 0, len(passages))
+	for _, p := range passages {
+		if _, ok := seen[p.FilePath]; !ok {
+			order = append(order, p.FilePath)
+			seen[p.FilePath] = entry{p.HeadingPath, p.Score}
+		} else if p.Score > seen[p.FilePath].score {
+			seen[p.FilePath] = entry{p.HeadingPath, p.Score}
+		}
+	}
+
+	sources := make([]sourceJSON, 0, len(order))
+	for _, f := range order {
+		e := seen[f]
+		sources = append(sources, sourceJSON{FilePath: f, HeadingPath: e.headingPath, Score: e.score})
+	}
+	if sources == nil {
+		sources = []sourceJSON{}
+	}
+
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	return enc.Encode(outputJSON{Answer: answer, Sources: sources})
 }
