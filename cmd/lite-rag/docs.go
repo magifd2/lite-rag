@@ -8,7 +8,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"lite-rag/internal/config"
 	"lite-rag/internal/database"
 )
 
@@ -47,7 +46,7 @@ func init() {
 }
 
 func openDB() (*database.DB, error) {
-	cfg, err := config.Load(cfgFile)
+	cfg, err := loadConfig()
 	if err != nil {
 		return nil, fmt.Errorf("load config: %w", err)
 	}

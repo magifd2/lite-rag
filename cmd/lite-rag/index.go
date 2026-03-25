@@ -7,7 +7,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"lite-rag/internal/config"
 	"lite-rag/internal/database"
 	"lite-rag/internal/indexer"
 	"lite-rag/internal/llm"
@@ -45,7 +44,7 @@ func runIndex(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("--dir and --file are mutually exclusive")
 	}
 
-	cfg, err := config.Load(cfgFile)
+	cfg, err := loadConfig()
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}

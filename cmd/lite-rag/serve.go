@@ -7,7 +7,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"lite-rag/internal/config"
 	"lite-rag/internal/database"
 	"lite-rag/internal/llm"
 	"lite-rag/internal/server"
@@ -27,7 +26,7 @@ func init() {
 }
 
 func runServe(cmd *cobra.Command, args []string) error {
-	cfg, err := config.Load(cfgFile)
+	cfg, err := loadConfig()
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}
