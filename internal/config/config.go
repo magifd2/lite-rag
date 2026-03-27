@@ -3,11 +3,15 @@ package config
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 )
+
+// Stderr is the writer used for warning messages; can be overridden in tests.
+var Stderr io.Writer = os.Stderr
 
 // Config is the top-level configuration structure.
 type Config struct {
@@ -97,7 +101,8 @@ func DefaultConfigPath() string {
 func Load(path string) (*Config, error) {
 	cfg := defaults()
 
-	if _, err := os.Stat(path); err == nil {
+	if info, err := os.Stat(path); err == nil {
+		checkPermissions(path, info)
 		if _, err := toml.DecodeFile(path, &cfg); err != nil {
 			return nil, fmt.Errorf("parse config %s: %w", path, err)
 		}
@@ -105,6 +110,17 @@ func Load(path string) (*Config, error) {
 
 	applyEnv(&cfg)
 	return &cfg, nil
+}
+
+func checkPermissions(path string, info os.FileInfo) {
+	perm := info.Mode().Perm()
+	if perm&0077 != 0 {
+		_, _ = fmt.Fprintf(Stderr,
+			"Warning: config file %s has permissions %04o; expected 0600.\n"+
+				"  The file may contain an API key. Run: chmod 600 %s\n",
+			path, perm, path,
+		)
+	}
 }
 
 // applyEnv overlays LITE_RAG_* environment variables onto cfg.
