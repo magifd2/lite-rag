@@ -7,6 +7,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.2.4] — 2026-03-27
+
+### Security
+
+- Added config file permission check: warns to stderr and suggests `chmod 600`
+  when the config file is readable by group or others (`perm & 0077 != 0`).
+
+---
+
 ## [0.2.3] — 2026-03-27
 
 ### Added
@@ -156,6 +165,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Windows is not supported due to CGo constraints from `go-duckdb`.
 
+[0.2.4]: https://github.com/nlink-jp/lite-rag/releases/tag/v0.2.4
 [0.2.3]: https://github.com/nlink-jp/lite-rag/releases/tag/v0.2.3
 [0.2.2]: https://github.com/nlink-jp/lite-rag/releases/tag/v0.2.2
 [0.2.1]: https://github.com/nlink-jp/lite-rag/releases/tag/v0.2.1
