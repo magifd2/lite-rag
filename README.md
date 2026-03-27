@@ -123,6 +123,7 @@ Commands:
   ask     <question>           Answer a question using the indexed documents
   serve                        Start the HTTP API server with embedded Web UI
   docs                         Manage indexed documents
+  reindex                      Re-embed documents after changing the embedding model
   version                      Print version information
 
 Global flags:
@@ -145,6 +146,20 @@ Global flags:
 - `--file`: indexes the specified file directly, regardless of extension.
 - Skips files whose SHA-256 hash matches the stored value (no re-embedding).
 - `--dir` per-file errors are logged and do not abort the overall run; `--file` errors are returned immediately.
+
+### reindex
+
+```sh
+# Re-embed all documents after changing models.embedding in the config
+./bin/lite-rag reindex
+
+# Target a specific database
+./bin/lite-rag --db ./project.db reindex
+```
+
+- Finds all documents whose stored `embedding_model` differs from the current config.
+- Re-embeds them using the **chunk text already in the database** — source files do not need to exist on disk.
+- Updates only the embedding vectors and `embedding_model`; chunk content and file hashes are unchanged.
 
 ### ask
 

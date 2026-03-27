@@ -7,6 +7,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **`reindex` command** — re-embeds all documents whose stored `embedding_model` differs
+  from the current config. Uses chunk text already in the database, so source files do not
+  need to exist on disk. Only embedding vectors and `embedding_model` are updated; chunk
+  content and file hashes are unchanged.
+
+---
+
 ## [0.2.2] — 2026-03-26
 
 ### Added

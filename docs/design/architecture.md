@@ -338,6 +338,7 @@ Commands:
           --json               Output answer and sources as a JSON object
   serve                        Start the HTTP API server with embedded Web UI
   docs                         Manage indexed documents (list / show / delete)
+  reindex                      Re-embed documents after changing the embedding model
   version                      Print version information
 
 Global flags:
@@ -351,6 +352,14 @@ editing the config file:
 ```sh
 lite-rag --db ./docs-en.db ask "How does chunking work?"
 lite-rag --db ./docs-ja.db ask "チャンク分割はどう動く？"
+```
+
+`reindex` re-embeds all stale documents (those indexed with a different model)
+using chunk text stored in the DB — no file system access required:
+
+```sh
+# After updating models.embedding in config:
+lite-rag reindex
 ```
 
 ---

@@ -285,6 +285,7 @@ lite-rag [--config <path>] [--db <path>] <command>
           --json              回答とソースを JSON オブジェクトで出力
   serve                      HTTP API サーバーと組み込み Web UI を起動
   docs                       インデックス済みドキュメントを管理（list / show / delete）
+  reindex                    エンベディングモデル変更後に再エンベディングを実行
   version                    バージョン情報を表示
 
 グローバルフラグ:
@@ -297,6 +298,13 @@ lite-rag [--config <path>] [--db <path>] <command>
 ```sh
 lite-rag --db ./docs-en.db ask "How does chunking work?"
 lite-rag --db ./docs-ja.db ask "チャンク分割はどう動く？"
+```
+
+`reindex` は DB に保存済みのチャンクテキストを使って、異なるモデルでインデックスされたドキュメントをすべて再エンベディングします（ファイルシステムへのアクセス不要）:
+
+```sh
+# config の models.embedding を変更した後:
+lite-rag reindex
 ```
 
 ---

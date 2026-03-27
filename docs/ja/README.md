@@ -115,6 +115,7 @@ lite-rag [--config <path>] [--db <path>] <command>
   ask     <question>         インデックス済みドキュメントを使って質問に回答
   serve                      HTTP API サーバーと組み込み Web UI を起動
   docs                       インデックス済みドキュメントを管理
+  reindex                    エンベディングモデル変更後に再エンベディングを実行
   version                    バージョン情報を表示
 
 グローバルフラグ:
@@ -137,6 +138,20 @@ lite-rag [--config <path>] [--db <path>] <command>
 - `--file`: 拡張子に関わらず指定ファイルを直接インデックスします
 - SHA-256 ハッシュが一致するファイルはスキップします（再埋め込みなし）
 - `--dir` のファイル単位エラーはログに記録され全体の処理は継続しますが、`--file` のエラーは即時返されます
+
+### reindex
+
+```sh
+# config の models.embedding を変更した後に実行
+./bin/lite-rag reindex
+
+# 特定のDBを対象にする場合
+./bin/lite-rag --db ./project.db reindex
+```
+
+- DB 内で `embedding_model` が現在の設定と異なるドキュメントをすべて検出します
+- **DB に保存済みのチャンクテキストを使って**再エンベディングするため、ソースファイルの存在は不要です
+- 埋め込みベクターと `embedding_model` のみを更新し、チャンク内容・ファイルハッシュは変更しません
 
 ### ask
 
