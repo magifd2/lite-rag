@@ -1,7 +1,4 @@
-# Compiled binaries
-bin/
-
-# Release archives
+# Build artifacts
 dist/
 
 # DuckDB database files

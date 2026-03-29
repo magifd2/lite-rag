@@ -45,7 +45,7 @@ all: build
 ## build: compile the binary for the current platform
 build:
 	@mkdir -p bin
-	go build $(LDFLAGS) -o bin/$(BINARY) $(CMD)
+	go build $(LDFLAGS) -o dist/$(BINARY) $(CMD)
 
 ## test: run all tests
 test:
@@ -94,10 +94,10 @@ cross-build-darwin:
 	@mkdir -p bin
 	@echo "Building darwin/arm64 (native)..."
 	GOOS=darwin GOARCH=arm64 CGO_ENABLED=1 \
-		go build $(LDFLAGS) -o bin/$(BINARY)-darwin-arm64 $(CMD)
+		go build $(LDFLAGS) -o dist/$(BINARY)-darwin-arm64 $(CMD)
 	@echo "Building darwin/amd64..."
 	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 CC="clang -arch x86_64" \
-		go build $(LDFLAGS) -o bin/$(BINARY)-darwin-amd64 $(CMD)
+		go build $(LDFLAGS) -o dist/$(BINARY)-darwin-amd64 $(CMD)
 
 ## cross-build-linux: compile linux/amd64 and linux/arm64 inside a container
 cross-build-linux:
@@ -127,19 +127,19 @@ cross-build-linux-native:
 	@if [ "$$(uname -m)" = "aarch64" ]; then \
 		GOOS=linux GOARCH=amd64 CGO_ENABLED=1 \
 			CC=x86_64-linux-gnu-gcc CXX=x86_64-linux-gnu-g++ \
-			go build $(LDFLAGS) -o bin/$(BINARY)-linux-amd64 $(CMD); \
+			go build $(LDFLAGS) -o dist/$(BINARY)-linux-amd64 $(CMD); \
 	else \
 		GOOS=linux GOARCH=amd64 CGO_ENABLED=1 \
-			go build $(LDFLAGS) -o bin/$(BINARY)-linux-amd64 $(CMD); \
+			go build $(LDFLAGS) -o dist/$(BINARY)-linux-amd64 $(CMD); \
 	fi
 	@echo "Building linux/arm64..."
 	@if [ "$$(uname -m)" = "x86_64" ]; then \
 		GOOS=linux GOARCH=arm64 CGO_ENABLED=1 \
 			CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ \
-			go build $(LDFLAGS) -o bin/$(BINARY)-linux-arm64 $(CMD); \
+			go build $(LDFLAGS) -o dist/$(BINARY)-linux-arm64 $(CMD); \
 	else \
 		GOOS=linux GOARCH=arm64 CGO_ENABLED=1 \
-			go build $(LDFLAGS) -o bin/$(BINARY)-linux-arm64 $(CMD); \
+			go build $(LDFLAGS) -o dist/$(BINARY)-linux-arm64 $(CMD); \
 	fi
 
 # ── Distribution packages ─────────────────────────────────────────────────
@@ -160,14 +160,14 @@ dist-darwin: cross-build-darwin
 	@mkdir -p $(DIST_DIR)
 	@echo "Packaging darwin/arm64..."
 	@mkdir -p /tmp/lite-rag-pkg && \
-		cp bin/$(BINARY)-darwin-arm64 /tmp/lite-rag-pkg/$(BINARY) && \
+		cp dist/$(BINARY)-darwin-arm64 /tmp/lite-rag-pkg/$(BINARY) && \
 		cp config.example.toml README.md /tmp/lite-rag-pkg/ && \
 		tar -czf $(DIST_DIR)/$(BINARY)-$(VERSION)-darwin-arm64.tar.gz \
 			-C /tmp/lite-rag-pkg . && \
 		rm -rf /tmp/lite-rag-pkg
 	@echo "Packaging darwin/amd64..."
 	@mkdir -p /tmp/lite-rag-pkg && \
-		cp bin/$(BINARY)-darwin-amd64 /tmp/lite-rag-pkg/$(BINARY) && \
+		cp dist/$(BINARY)-darwin-amd64 /tmp/lite-rag-pkg/$(BINARY) && \
 		cp config.example.toml README.md /tmp/lite-rag-pkg/ && \
 		tar -czf $(DIST_DIR)/$(BINARY)-$(VERSION)-darwin-amd64.tar.gz \
 			-C /tmp/lite-rag-pkg . && \
@@ -178,14 +178,14 @@ dist-linux: cross-build-linux
 	@mkdir -p $(DIST_DIR)
 	@echo "Packaging linux/amd64..."
 	@mkdir -p /tmp/lite-rag-pkg && \
-		cp bin/$(BINARY)-linux-amd64 /tmp/lite-rag-pkg/$(BINARY) && \
+		cp dist/$(BINARY)-linux-amd64 /tmp/lite-rag-pkg/$(BINARY) && \
 		cp config.example.toml README.md /tmp/lite-rag-pkg/ && \
 		tar -czf $(DIST_DIR)/$(BINARY)-$(VERSION)-linux-amd64.tar.gz \
 			-C /tmp/lite-rag-pkg . && \
 		rm -rf /tmp/lite-rag-pkg
 	@echo "Packaging linux/arm64..."
 	@mkdir -p /tmp/lite-rag-pkg && \
-		cp bin/$(BINARY)-linux-arm64 /tmp/lite-rag-pkg/$(BINARY) && \
+		cp dist/$(BINARY)-linux-arm64 /tmp/lite-rag-pkg/$(BINARY) && \
 		cp config.example.toml README.md /tmp/lite-rag-pkg/ && \
 		tar -czf $(DIST_DIR)/$(BINARY)-$(VERSION)-linux-arm64.tar.gz \
 			-C /tmp/lite-rag-pkg . && \
@@ -208,7 +208,7 @@ dist-linux: cross-build-linux
 eval-build-db: build
 	@mkdir -p testdata/db
 	@echo "Indexing docs/ into $(EVAL_DB) ..."
-	LITE_RAG_DB_PATH=$(EVAL_DB) ./bin/$(BINARY) index docs/
+	LITE_RAG_DB_PATH=$(EVAL_DB) ./dist/$(BINARY) index docs/
 	@ln -sf lite-rag-docs-$(EVAL_DATE).db $(EVAL_LINK)
 	@echo "Symlink updated: $(EVAL_LINK) -> lite-rag-docs-$(EVAL_DATE).db"
 
@@ -222,7 +222,7 @@ eval:
 
 ## clean: remove build artifacts
 clean:
-	rm -rf bin/ $(DIST_DIR)/
+	rm -rf $(DIST_DIR)/
 
 ## help: show this help
 help:
