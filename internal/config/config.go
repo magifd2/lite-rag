@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/BurntSushi/toml"
 )
@@ -113,6 +114,11 @@ func Load(path string) (*Config, error) {
 }
 
 func checkPermissions(path string, info os.FileInfo) {
+	// Windows NTFS does not support Unix permission bits; os.FileInfo.Mode()
+	// always reports 0666, which would trigger a false-positive warning.
+	if runtime.GOOS == "windows" {
+		return
+	}
 	perm := info.Mode().Perm()
 	if perm&0077 != 0 {
 		_, _ = fmt.Fprintf(Stderr,

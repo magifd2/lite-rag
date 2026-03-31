@@ -7,6 +7,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.2.6] — 2026-03-31
+
+### Fixed
+- Skip config file permission check on Windows/NTFS (always reports 0666)
+
+---
+
 ## [0.2.5] — 2026-03-28
 
 ### Internal
